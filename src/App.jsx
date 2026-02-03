@@ -185,6 +185,7 @@ const CustomCursor = () => {
 // Navigation
 const Navigation = () => {
   const [scrolled, setScrolled] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50)
@@ -193,6 +194,7 @@ const Navigation = () => {
   }, [])
   
   const scrollToSection = (id) => {
+    setMenuOpen(false)
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
   }
   
@@ -210,8 +212,10 @@ const Navigation = () => {
         >
           <span className="logo-text">N</span>
         </motion.div>
-        <div className="nav-links">
-          {['About', 'Skills', 'Projects', 'Contact'].map((item, i) => (
+
+        {/* Desktop Links */}
+        <div className="nav-links nav-links-desktop">
+          {['About', 'Services', 'Skills', 'Projects', 'Contact'].map((item, i) => (
             <motion.button
               key={item}
               className="nav-link"
@@ -225,7 +229,40 @@ const Navigation = () => {
             </motion.button>
           ))}
         </div>
+
+        {/* Mobile Menu Toggle */}
+        <button
+          className="nav-toggle"
+          aria-label="Toggle navigation"
+          onClick={() => setMenuOpen(prev => !prev)}
+        >
+          <span className={`nav-toggle-line ${menuOpen ? 'open' : ''}`} />
+          <span className={`nav-toggle-line ${menuOpen ? 'open' : ''}`} />
+        </button>
       </div>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            className="nav-links-mobile"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            {['About', 'Services', 'Skills', 'Projects', 'Contact'].map(item => (
+              <button
+                key={item}
+                className="nav-link nav-link-mobile"
+                onClick={() => scrollToSection(item.toLowerCase())}
+              >
+                {item}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.nav>
   )
 }
@@ -334,6 +371,14 @@ const Hero = () => {
           >
             <span>Get In Touch</span>
           </MagneticButton>
+          <motion.a
+            href="/Naeem-Abbas-Ali-CV.pdf"
+            className="btn btn-ghost hoverable"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            <span>Download CV</span>
+          </motion.a>
           <motion.a
             href="https://github.com/Naeemali081"
             target="_blank"
@@ -505,6 +550,9 @@ const About = () => {
               performance optimization, and creating intuitive user interfaces that drive 
               business results.
             </p>
+          <p>
+            I'm based in Pakistan and open to <strong>remote and hybrid opportunities worldwide</strong>.
+          </p>
             <div className="about-highlights">
               <div className="highlight-item">
                 <div className="highlight-icon">
@@ -549,16 +597,104 @@ const Skills = () => {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
   
-  const skills = [
-    { name: 'Vue.js', level: 99, color: '#4FC08D' },
-    { name: 'React.js', level: 80, color: '#61DAFB' },
-    { name: 'Tailwind CSS', level: 90, color: '#06B6D4' },
-    { name: 'Bootstrap', level: 88, color: '#7952B3' },
-    { name: 'JavaScript', level: 95, color: '#F7DF1E' },
-    { name: 'HTML/CSS', level: 92, color: '#E34F26' },
-    { name: 'Laravel', level: 85, color: '#FF2D20' },
-    { name: 'REST APIs', level: 85, color: '#6366F1' },
-    { name: 'TypeScript', level: 62, color: '#3178C6' },
+  // Primary stack with official logos
+  const primaryStack = [
+    { 
+      name: 'React.js', 
+      tag: 'Frontend Framework', 
+      color: '#61DAFB',
+      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg'
+    },
+    { 
+      name: 'Vue.js', 
+      tag: 'Frontend Framework', 
+      color: '#4FC08D',
+      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vuejs/vuejs-original.svg'
+    },
+    { 
+      name: 'Next.js', 
+      tag: 'Full‑stack React', 
+      color: '#ffffff',
+      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg'
+    },
+    { 
+      name: 'Laravel', 
+      tag: 'Backend Framework', 
+      color: '#FF2D20',
+      // Use the standard Laravel logo variant that is reliably available
+      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/laravel/laravel-original.svg'
+    },
+    { 
+      name: 'Node.js', 
+      tag: 'Backend Runtime', 
+      color: '#3C873A',
+      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg'
+    },
+    { 
+      name: 'TypeScript', 
+      tag: 'Typed JavaScript', 
+      color: '#3178C6',
+      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg'
+    },
+    { 
+      name: 'JavaScript', 
+      tag: 'Language', 
+      color: '#F7DF1E',
+      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg'
+    },
+    { 
+      name: 'Tailwind CSS', 
+      tag: 'Styling', 
+      color: '#06B6D4',
+      // Use the main Tailwind CSS logo variant
+      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-original.svg'
+    },
+    { 
+      name: 'Bootstrap', 
+      tag: 'UI Library', 
+      color: '#7952B3',
+      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bootstrap/bootstrap-original.svg'
+    },
+    { 
+      name: 'GitHub',
+      tag: 'Version Control',
+      color: '#ffffff',
+      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg'
+    },
+    { 
+      name: 'GitLab',
+      tag: 'DevOps Platform',
+      color: '#FC6D26',
+      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/gitlab/gitlab-original.svg'
+    },
+    { 
+      name: 'Slack',
+      tag: 'Team Communication',
+      color: '#4A154B',
+      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/slack/slack-original.svg'
+    },
+    { 
+      name: 'Jira',
+      tag: 'Project Management',
+      color: '#2684FF',
+      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/jira/jira-original.svg'
+    },
+    { 
+      name: 'Trello',
+      tag: 'Project Management',
+      color: '#026AA7',
+      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/trello/trello-plain.svg'
+    },
+  ]
+
+  // Extended tools strip inspired by the second image
+  const toolStrip = [
+    'REST APIs',
+    'MongoDB',
+    'PostgreSQL',
+    'Docker',
+    'AWS',
+    'HTML/CSS',
   ]
   
   return (
@@ -574,29 +710,113 @@ const Skills = () => {
           <h2 className="section-title">Technologies I work with</h2>
         </motion.div>
         
-        <div className="skills-grid">
-          {skills.map((skill, i) => (
+        <motion.p
+          className="skills-lead"
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
+          Using the most up‑to‑date and battle‑tested technologies, I design and ship interfaces that feel modern, fast, and reliable.
+        </motion.p>
+
+        <div className="skills-badges">
+          {primaryStack.map((skill, i) => (
             <motion.div
               key={skill.name}
-              className="skill-card hoverable"
+              className="skill-badge hoverable"
+              initial={{ opacity: 0, y: 20, scale: 0.9 }}
+              animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+              transition={{ duration: 0.4, delay: 0.15 * i }}
+              whileHover={{ y: -4, scale: 1.03, boxShadow: '0 12px 35px rgba(15, 23, 42, 0.6)' }}
+            >
+              <div 
+                className="skill-badge-icon"
+                style={{ background: `${skill.color}18` }}
+              >
+                <img src={skill.logo} alt={`${skill.name} logo`} loading="lazy" />
+              </div>
+              <div className="skill-badge-info">
+                <span className="skill-badge-name">{skill.name}</span>
+                <span className="skill-badge-tag">{skill.tag}</span>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        <motion.div
+          className="skills-strip"
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 0.4 }}
+        >
+          {toolStrip.map((tool, i) => (
+            <span key={tool} className="skills-chip" style={{ '--i': i }}>
+              {tool}
+            </span>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  )
+}
+
+// Services / What I Do Section
+const Services = () => {
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true, margin: "-100px" })
+
+  const services = [
+    {
+      title: 'Frontend Engineering',
+      tag: 'React, Vue & SPA Development',
+      description: 'Pixel-perfect, accessible, and responsive interfaces built with modern frameworks and best practices.',
+      points: ['SPA & dashboard UIs', 'Design-to-code implementation', 'Performance & Lighthouse optimization'],
+    },
+    {
+      title: 'Full‑stack Web Apps',
+      tag: 'Laravel & Node.js Backends',
+      description: 'From API design to deployment, I ship reliable full‑stack solutions that scale with your product.',
+      points: ['RESTful APIs & auth flows', 'Database design & integrations', 'Production-ready deployments'],
+    },
+    {
+      title: 'Product & UI Collaboration',
+      tag: 'Design Systems & Team Workflows',
+      description: 'Bridging product, design, and engineering to deliver cohesive experiences consistently.',
+      points: ['Reusable component systems', 'Front‑of‑front‑end architecture', 'Agile & remote collaboration'],
+    },
+  ]
+
+  return (
+    <section className="services" id="services" ref={ref}>
+      <div className="container">
+        <motion.div
+          className="section-header"
+          initial={{ opacity: 0, y: 40 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.8 }}
+        >
+          <span className="section-tag">Services</span>
+          <h2 className="section-title">How I can help your product</h2>
+        </motion.div>
+
+        <div className="services-grid">
+          {services.map((service, i) => (
+            <motion.div
+              key={service.title}
+              className="service-card"
               initial={{ opacity: 0, y: 30 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: i * 0.1 }}
-              whileHover={{ y: -5, transition: { duration: 0.2 } }}
+              transition={{ duration: 0.5, delay: 0.15 * i }}
+              whileHover={{ y: -6, scale: 1.01 }}
             >
-              <div className="skill-header">
-                <span className="skill-name">{skill.name}</span>
-                <span className="skill-percentage">{skill.level}%</span>
-              </div>
-              <div className="skill-bar">
-                <motion.div
-                  className="skill-progress"
-                  initial={{ width: 0 }}
-                  animate={isInView ? { width: `${skill.level}%` } : {}}
-                  transition={{ duration: 1, delay: 0.5 + i * 0.1, ease: "easeOut" }}
-                  style={{ background: skill.color }}
-                />
-              </div>
+              <span className="service-tag">{service.tag}</span>
+              <h3 className="service-title">{service.title}</h3>
+              <p className="service-description">{service.description}</p>
+              <ul className="service-points">
+                {service.points.map(point => (
+                  <li key={point}>{point}</li>
+                ))}
+              </ul>
             </motion.div>
           ))}
         </div>
@@ -616,6 +836,8 @@ const Projects = () => {
       description: 'A peer-to-peer cryptocurrency exchange platform with secure login, dark mode, and real-time trading.',
       url: 'https://fastp2p.pro/',
       tech: ['Vue.js', 'Laravel', 'WebSocket'],
+      role: 'Frontend Lead · Vue.js & Laravel integration',
+      impact: 'Delivered a fast, secure trading experience with real-time updates.',
       image: '/images/fastp2p.png'
     },
     {
@@ -623,6 +845,8 @@ const Projects = () => {
       description: 'Business reputation management platform with alerts, insights, and V-Score analytics.',
       url: 'https://vercepta.com/',
       tech: ['React', 'Node.js', 'MongoDB'],
+      role: 'Senior Frontend Developer · React dashboards',
+      impact: 'Built analytical dashboards and alert flows for business teams.',
       image: '/images/vercepta.png'
     },
     {
@@ -630,6 +854,8 @@ const Projects = () => {
       description: 'Healthcare platform connecting patients with medical professionals seamlessly.',
       url: 'https://testing.v2.godocta.com/',
       tech: ['Vue.js', 'Laravel', 'MySQL'],
+      role: 'Full‑stack Developer · Vue.js & Laravel',
+      impact: 'Implemented appointment journeys and responsive layouts for patients and doctors.',
       image: '/images/godocta.png'
     },
     {
@@ -637,6 +863,8 @@ const Projects = () => {
       description: 'Collaboration platform for software teams with Kanban boards and customizable workflows.',
       url: 'https://stickytasks.com/',
       tech: ['React', 'Firebase', 'Tailwind'],
+      role: 'Frontend Developer · React & Tailwind UI',
+      impact: 'Crafted interactive board experiences and realtime task updates.',
       image: '/images/stickytasks.png'
     },
     {
@@ -644,6 +872,8 @@ const Projects = () => {
       description: 'Social music network empowering artists with monetization tools and genre discovery.',
       url: 'https://playy.co.uk/',
       tech: ['Vue.js', 'Laravel', 'AWS'],
+      role: 'Senior Frontend Developer · Vue.js',
+      impact: 'Shipped audience-facing music discovery experiences and creator tools.',
       image: '/images/playy.png'
     },
   ]
@@ -701,6 +931,12 @@ const Projects = () => {
               <div className="project-info">
                 <h3 className="project-title">{project.title}</h3>
                 <p className="project-description">{project.description}</p>
+                {project.role && (
+                  <p className="project-meta"><strong>Role:</strong> {project.role}</p>
+                )}
+                {project.impact && (
+                  <p className="project-meta"><strong>Impact:</strong> {project.impact}</p>
+                )}
                 <div className="project-tech">
                   {project.tech.map(tech => (
                     <span key={tech} className="tech-tag">{tech}</span>
@@ -719,6 +955,18 @@ const Projects = () => {
 const Contact = () => {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    const formData = new FormData(e.target)
+    const name = formData.get('name')
+    const email = formData.get('email')
+    const message = formData.get('message')
+
+    const subject = encodeURIComponent(`Portfolio contact from ${name}`)
+    const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`)
+    window.location.href = `mailto:naeemabbas101r@gmail.com?subject=${subject}&body=${body}`
+  }
   
   return (
     <section className="contact" id="contact" ref={ref}>
@@ -736,49 +984,132 @@ const Contact = () => {
             we can bring your ideas to life with modern, performant web solutions.
           </p>
           
-          <div className="contact-links">
-            <motion.a
-              href="mailto:naeemabbas101r@gmail.com"
-              className="contact-link hoverable"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                <polyline points="22,6 12,13 2,6"/>
-              </svg>
-              <span>Email Me</span>
-            </motion.a>
-            <motion.a
-              href="https://linkedin.com/in/naeem-abbas-ali-147a9122a/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="contact-link hoverable"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
-                <rect x="2" y="9" width="4" height="12"/>
-                <circle cx="4" cy="4" r="2"/>
-              </svg>
-              <span>LinkedIn</span>
-            </motion.a>
-            <motion.a
-              href="https://github.com/Naeemali081"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="contact-link hoverable"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
-              </svg>
-              <span>GitHub</span>
-            </motion.a>
+          <div className="contact-layout">
+            <form className="contact-form" onSubmit={handleSubmit}>
+              <div className="form-row">
+                <div className="form-field">
+                  <label htmlFor="name">Name</label>
+                  <input id="name" name="name" type="text" required placeholder="Your name" />
+                </div>
+                <div className="form-field">
+                  <label htmlFor="email">Email</label>
+                  <input id="email" name="email" type="email" required placeholder="you@example.com" />
+                </div>
+              </div>
+              <div className="form-field">
+                <label htmlFor="message">Project details</label>
+                <textarea
+                  id="message"
+                  name="message"
+                  rows="4"
+                  required
+                  placeholder="Tell me a bit about your project, timeline, and goals."
+                />
+              </div>
+              <button type="submit" className="btn btn-primary contact-submit">
+                Send Message
+              </button>
+            </form>
+
+            <div className="contact-links">
+              <motion.a
+                href="mailto:naeemabbas101r@gmail.com"
+                className="contact-link hoverable"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline points="22,6 12,13 2,6"/>
+                </svg>
+                <span>Email Me</span>
+              </motion.a>
+              <motion.a
+                href="https://linkedin.com/in/naeem-abbas-ali-147a9122a/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="contact-link hoverable"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+                  <rect x="2" y="9" width="4" height="12"/>
+                  <circle cx="4" cy="4" r="2"/>
+                </svg>
+                <span>LinkedIn</span>
+              </motion.a>
+              <motion.a
+                href="https://github.com/Naeemali081"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="contact-link hoverable"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+                </svg>
+                <span>GitHub</span>
+              </motion.a>
+            </div>
           </div>
         </motion.div>
+      </div>
+    </section>
+  )
+}
+
+// Testimonials Section
+const Testimonials = () => {
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true, margin: "-100px" })
+
+  const testimonials = [
+    {
+      name: 'Product Founder, SaaS Platform',
+      quote:
+        'Naeem quickly understood our product vision and translated it into a polished UI. Our users immediately noticed the improved experience.',
+    },
+    {
+      name: 'CTO, Healthcare Startup',
+      quote:
+        'From Vue frontends to Laravel backends, Naeem was instrumental in shipping features on time while keeping quality high.',
+    },
+    {
+      name: 'Project Manager, Fintech',
+      quote:
+        'Reliable, communicative, and detail-oriented. Working with Naeem on our trading platform frontend was a smooth experience.',
+    },
+  ]
+
+  return (
+    <section className="testimonials" ref={ref}>
+      <div className="container">
+        <motion.div
+          className="section-header"
+          initial={{ opacity: 0, y: 40 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.8 }}
+        >
+          <span className="section-tag">Testimonials</span>
+          <h2 className="section-title">What past collaborators say</h2>
+        </motion.div>
+
+        <div className="testimonials-grid">
+          {testimonials.map((item, i) => (
+            <motion.div
+              key={item.name}
+              className="testimonial-card"
+              initial={{ opacity: 0, y: 30 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5, delay: 0.15 * i }}
+            >
+              <p className="testimonial-quote">“{item.quote}”</p>
+              <p className="testimonial-name">{item.name}</p>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </section>
   )
@@ -845,8 +1176,10 @@ function App() {
             <Hero />
             <Stats />
             <About />
+            <Services />
             <Skills />
             <Projects />
+            <Testimonials />
             <Contact />
           </main>
           <Footer />
