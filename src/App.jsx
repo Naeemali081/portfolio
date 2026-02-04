@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, useScroll, useTransform, useInView, AnimatePresence } from 'framer-motion'
 
 // Dynamic Visitor Counter Hook
@@ -62,47 +63,6 @@ const AnimatedCounter = ({ end, duration = 2, suffix = '', loading = false }) =>
   return <span ref={ref}>{loading ? '...' : count}{!loading && suffix}</span>
 }
 
-// Floating Tech Icons for Hero
-const FloatingIcons = () => {
-  const icons = [
-    { name: 'React', color: '#61DAFB', path: 'M12 13.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm0 0c-4.136 0-7.5-2.015-7.5-4.5S7.864 4.5 12 4.5s7.5 2.015 7.5 4.5-3.364 4.5-7.5 4.5z' },
-    { name: 'Vue', color: '#4FC08D', path: 'M2 3l10 18L22 3h-4l-6 10.5L6 3H2z' },
-    { name: 'JS', color: '#F7DF1E', path: 'M3 3h18v18H3V3zm4.5 14.4c.3.6.9 1.1 1.8 1.1.8 0 1.2-.4 1.2-.9 0-.6-.5-.9-1.3-1.2l-.4-.2c-1.3-.6-2.2-1.2-2.2-2.7 0-1.3 1-2.3 2.6-2.3 1.1 0 1.9.4 2.5 1.4l-1.4.9c-.3-.5-.6-.8-1.1-.8-.5 0-.8.3-.8.7 0 .5.3.7 1 1l.4.2c1.5.7 2.4 1.3 2.4 2.8 0 1.6-1.3 2.5-3 2.5-1.7 0-2.8-.8-3.3-1.9l1.6-.6zm6.5 0c.2.4.4.7.9.7.5 0 .8-.2.8-.9V11h2v6.1c0 1.5-.9 2.2-2.2 2.2-1.2 0-1.9-.6-2.2-1.3l1.3-.6z' },
-    { name: 'TS', color: '#3178C6', path: 'M3 3h18v18H3V3zm10.5 8.5V10h5v1.5h-1.5v5h-2v-5h-1.5zm-4 0V10H7v1.5h1v3.5c0 1.1.9 2 2 2h1.5v-1.5H10c-.3 0-.5-.2-.5-.5v-3.5h2V10h-2v1.5z' },
-    { name: 'Laravel', color: '#FF2D20', path: 'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5' },
-  ]
-  
-  return (
-    <div className="floating-icons">
-      {icons.map((icon, i) => (
-        <motion.div
-          key={icon.name}
-          className="floating-icon"
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ 
-            opacity: 0.6, 
-            scale: 1,
-            y: [0, -15, 0],
-            x: [0, i % 2 === 0 ? 10 : -10, 0],
-          }}
-          transition={{ 
-            delay: 1 + i * 0.2,
-            duration: 0.5,
-            y: { duration: 3 + i * 0.5, repeat: Infinity, ease: "easeInOut" },
-            x: { duration: 4 + i * 0.5, repeat: Infinity, ease: "easeInOut" },
-          }}
-          style={{ 
-            color: icon.color,
-            '--delay': `${i * 0.5}s`,
-          }}
-        >
-          <span className="icon-label">{icon.name}</span>
-        </motion.div>
-      ))}
-    </div>
-  )
-}
-
 // Magnetic Button Component
 const MagneticButton = ({ children, className, ...props }) => {
   const ref = useRef(null)
@@ -133,52 +93,46 @@ const MagneticButton = ({ children, className, ...props }) => {
   )
 }
 
-// Custom Cursor
+// Custom Cursor - Simple dot
 const CustomCursor = () => {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
-  const [isHovering, setIsHovering] = useState(false)
+  const [mousePosition, setMousePosition] = useState(null)
+  const [isVisible, setIsVisible] = useState(false)
   
   useEffect(() => {
-    const updateMousePosition = (e) => {
+    const updateMouse = (e) => {
       setMousePosition({ x: e.clientX, y: e.clientY })
+      setIsVisible(true)
     }
     
-    const handleHoverStart = () => setIsHovering(true)
-    const handleHoverEnd = () => setIsHovering(false)
+    const hideCursor = () => setIsVisible(false)
     
-    window.addEventListener('mousemove', updateMousePosition)
+    const handleMouseOut = (e) => {
+      if (!e.relatedTarget || !document.body.contains(e.relatedTarget)) hideCursor()
+    }
     
-    document.querySelectorAll('a, button, .hoverable').forEach(el => {
-      el.addEventListener('mouseenter', handleHoverStart)
-      el.addEventListener('mouseleave', handleHoverEnd)
-    })
+    window.addEventListener('mousemove', updateMouse)
+    document.addEventListener('mouseout', handleMouseOut, true)
+    document.addEventListener('pointerleave', hideCursor, true)
+    window.addEventListener('blur', hideCursor)
     
     return () => {
-      window.removeEventListener('mousemove', updateMousePosition)
+      window.removeEventListener('mousemove', updateMouse)
+      document.removeEventListener('mouseout', handleMouseOut, true)
+      document.removeEventListener('pointerleave', hideCursor, true)
+      window.removeEventListener('blur', hideCursor)
     }
   }, [])
   
-  return (
-    <>
-      <motion.div
-        className="cursor-dot"
-        animate={{
-          x: mousePosition.x - 4,
-          y: mousePosition.y - 4,
-          scale: isHovering ? 0 : 1,
-        }}
-        transition={{ type: "spring", stiffness: 500, damping: 28 }}
-      />
-      <motion.div
-        className="cursor-outline"
-        animate={{
-          x: mousePosition.x - 20,
-          y: mousePosition.y - 20,
-          scale: isHovering ? 1.5 : 1,
-        }}
-        transition={{ type: "spring", stiffness: 250, damping: 20 }}
-      />
-    </>
+  if (!mousePosition || !isVisible) return null
+  
+  const { x, y } = mousePosition
+  
+  return createPortal(
+    <div className="cursor-wrapper" style={{ transform: `translate(${x - 12}px, ${y - 12}px)` }}>
+      <span className="cursor-ring" />
+      <span className="cursor-dot" />
+    </div>,
+    document.body
   )
 }
 
@@ -273,7 +227,7 @@ const Hero = () => {
   const y = useTransform(scrollY, [0, 500], [0, 150])
   const opacity = useTransform(scrollY, [0, 300], [1, 0])
   
-  const techStack = ['React', 'Vue.js', 'TypeScript', 'Laravel', 'Tailwind']
+  const techStack = ['React', 'Vue.js', 'Laravel', 'Nuxt.js', 'Tailwind']
   
   return (
     <section className="hero">
@@ -282,9 +236,30 @@ const Hero = () => {
         <div className="gradient-orb orb-2" />
         <div className="gradient-orb orb-3" />
         <div className="grid-pattern" />
+        {/* Floating tech labels with icons - animated background elements with brand colors */}
+        <div className="hero-floating-tech">
+          <span className="floating-tech floating-tech-1">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" alt="" loading="lazy" />
+            React
+          </span>
+          <span className="floating-tech floating-tech-2">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="" loading="lazy" />
+            JS
+          </span>
+          <span className="floating-tech floating-tech-3">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vuejs/vuejs-original.svg" alt="" loading="lazy" />
+            Vue
+          </span>
+          <span className="floating-tech floating-tech-4">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/laravel/laravel-original.svg" alt="" loading="lazy" />
+            Laravel
+          </span>
+          <span className="floating-tech floating-tech-5">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" alt="" loading="lazy" />
+            TS
+          </span>
+        </div>
       </motion.div>
-      
-      <FloatingIcons />
       
       <motion.div className="hero-content" style={{ opacity }}>
         <motion.div
@@ -322,9 +297,7 @@ const Hero = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.5 }}
         >
-          A Senior Frontend Developer with 4+ years of expertise, specializing in 
-          creating pixel-perfect, high-performance web applications that deliver 
-          real business results.
+          A Senior Frontend Developer with 4+ years of expertise, specializing in creating pixel-perfect, high-performance web applications that deliver real business results.
         </motion.p>
         
         <motion.div
@@ -371,14 +344,14 @@ const Hero = () => {
           >
             <span>Get In Touch</span>
           </MagneticButton>
-          <motion.a
+          {/* <motion.a
             href="/Naeem-Abbas-Ali-CV.pdf"
             className="btn btn-ghost hoverable"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.97 }}
           >
             <span>Download CV</span>
-          </motion.a>
+          </motion.a> */}
           <motion.a
             href="https://github.com/Naeemali081"
             target="_blank"
@@ -420,7 +393,7 @@ const Stats = () => {
   
   const stats = [
     { 
-      value: 4, 
+      value: 3, 
       suffix: '+', 
       label: 'Years Experience',
       icon: (
@@ -539,7 +512,7 @@ const About = () => {
             transition={{ duration: 0.8, delay: 0.3 }}
           >
             <p>
-              I'm a Senior Frontend Developer with over 4 years of hands-on experience 
+              I'm a Full Stack Developer with over 3 years of hands-on experience 
               building modern, responsive web applications. My expertise spans across 
               <strong> React.js</strong> and <strong>Vue.js</strong> ecosystems, where I've 
               delivered high-impact projects for diverse clients.
@@ -589,6 +562,43 @@ const About = () => {
         </div>
       </div>
     </section>
+  )
+}
+
+// Skill Badge with image fallback
+const SkillBadge = ({ skill, i, isInView }) => {
+  const [imgError, setImgError] = useState(false)
+  
+  return (
+    <motion.div
+      className="skill-badge hoverable"
+      initial={{ opacity: 0, y: 20, scale: 0.9 }}
+      animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+      transition={{ duration: 0.4, delay: 0.15 * i }}
+      whileHover={{ y: -4, scale: 1.03, boxShadow: '0 12px 35px rgba(15, 23, 42, 0.6)' }}
+    >
+      <div 
+        className="skill-badge-icon"
+        style={{ background: `${skill.color}18` }}
+      >
+        {imgError ? (
+          <span className="skill-badge-fallback" style={{ color: skill.color }}>
+            {skill.name.charAt(0)}
+          </span>
+        ) : (
+          <img 
+            src={skill.logo} 
+            alt={`${skill.name} logo`} 
+            loading="lazy"
+            onError={() => setImgError(true)}
+          />
+        )}
+      </div>
+      <div className="skill-badge-info">
+        <span className="skill-badge-name">{skill.name}</span>
+        <span className="skill-badge-tag">{skill.tag}</span>
+      </div>
+    </motion.div>
   )
 }
 
@@ -685,15 +695,55 @@ const Skills = () => {
       color: '#026AA7',
       logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/trello/trello-plain.svg'
     },
+    { 
+      name: 'Stripe',
+      tag: 'Payment Integration',
+      color: '#635BFF',
+      logo: '/images/stripe.svg'
+    },
+    { 
+      name: 'OpenAI',
+      tag: 'AI Integration',
+      color: '#412991',
+      logo: '/images/openai.svg'
+    },
+    { 
+      name: 'Firebase',
+      tag: 'Backend & Realtime',
+      color: '#FFCA28',
+      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/firebase/firebase-plain.svg'
+    },
+    { 
+      name: 'AWS',
+      tag: 'Cloud & S3',
+      color: '#FF9900',
+      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original-wordmark.svg'
+    },
+    { 
+      name: 'REST API',
+      tag: 'API Integration',
+      color: '#6366f1',
+      logo: '/images/rest-api.svg'
+    },
+    { 
+      name: 'Chart.js',
+      tag: 'Data Visualization',
+      color: '#FF6384',
+      logo: '/images/chartjs.svg'
+    },
   ]
 
-  // Extended tools strip inspired by the second image
+  // Extended tools strip
   const toolStrip = [
-    'REST APIs',
+    'S3',
+    'Amazon Chime',
+    'WebSocket',
     'MongoDB',
     'PostgreSQL',
+    'MySQL',
+    'Redis',
     'Docker',
-    'AWS',
+    'JWT',
     'HTML/CSS',
   ]
   
@@ -721,25 +771,7 @@ const Skills = () => {
 
         <div className="skills-badges">
           {primaryStack.map((skill, i) => (
-            <motion.div
-              key={skill.name}
-              className="skill-badge hoverable"
-              initial={{ opacity: 0, y: 20, scale: 0.9 }}
-              animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
-              transition={{ duration: 0.4, delay: 0.15 * i }}
-              whileHover={{ y: -4, scale: 1.03, boxShadow: '0 12px 35px rgba(15, 23, 42, 0.6)' }}
-            >
-              <div 
-                className="skill-badge-icon"
-                style={{ background: `${skill.color}18` }}
-              >
-                <img src={skill.logo} alt={`${skill.name} logo`} loading="lazy" />
-              </div>
-              <div className="skill-badge-info">
-                <span className="skill-badge-name">{skill.name}</span>
-                <span className="skill-badge-tag">{skill.tag}</span>
-              </div>
-            </motion.div>
+            <SkillBadge key={skill.name} skill={skill} i={i} isInView={isInView} />
           ))}
         </div>
 
@@ -835,7 +867,7 @@ const Projects = () => {
       title: 'FastP2P',
       description: 'A peer-to-peer cryptocurrency exchange platform with secure login, dark mode, and real-time trading.',
       url: 'https://fastp2p.pro/',
-      tech: ['Vue.js', 'Laravel', 'WebSocket'],
+      tech: ['Vue.js', 'Laravel', 'WebSocket', 'REST API', 'JWT Auth', 'Redis'],
       role: 'Frontend Lead · Vue.js & Laravel integration',
       impact: 'Delivered a fast, secure trading experience with real-time updates.',
       image: '/images/fastp2p.png'
@@ -844,7 +876,7 @@ const Projects = () => {
       title: 'Vercepta',
       description: 'Business reputation management platform with alerts, insights, and V-Score analytics.',
       url: 'https://vercepta.com/',
-      tech: ['React', 'Node.js', 'MongoDB'],
+      tech: ['React', 'Node.js', 'MongoDB', 'REST API', 'Chart.js', 'JWT'],
       role: 'Senior Frontend Developer · React dashboards',
       impact: 'Built analytical dashboards and alert flows for business teams.',
       image: '/images/vercepta.png'
@@ -853,7 +885,7 @@ const Projects = () => {
       title: 'GoDocta',
       description: 'Healthcare platform connecting patients with medical professionals seamlessly.',
       url: 'https://testing.v2.godocta.com/',
-      tech: ['Vue.js', 'Laravel', 'MySQL'],
+      tech: ['Vue.js', 'Laravel', 'MySQL', 'Stripe', 'OpenAI', 'S3', 'Amazon Chime', 'REST API'],
       role: 'Full‑stack Developer · Vue.js & Laravel',
       impact: 'Implemented appointment journeys and responsive layouts for patients and doctors.',
       image: '/images/godocta.png'
@@ -862,7 +894,7 @@ const Projects = () => {
       title: 'StickyTasks',
       description: 'Collaboration platform for software teams with Kanban boards and customizable workflows.',
       url: 'https://stickytasks.com/',
-      tech: ['React', 'Firebase', 'Tailwind'],
+      tech: ['React', 'Firebase', 'Tailwind', 'Firestore', 'Real-time DB', 'Auth'],
       role: 'Frontend Developer · React & Tailwind UI',
       impact: 'Crafted interactive board experiences and realtime task updates.',
       image: '/images/stickytasks.png'
@@ -871,7 +903,7 @@ const Projects = () => {
       title: 'Playy UK',
       description: 'Social music network empowering artists with monetization tools and genre discovery.',
       url: 'https://playy.co.uk/',
-      tech: ['Vue.js', 'Laravel', 'AWS'],
+      tech: ['Vue.js', 'Laravel', 'AWS', 'S3', 'REST API', 'WebSocket'],
       role: 'Senior Frontend Developer · Vue.js',
       impact: 'Shipped audience-facing music discovery experiences and creator tools.',
       image: '/images/playy.png'
@@ -967,9 +999,47 @@ const Contact = () => {
     const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`)
     window.location.href = `mailto:naeemabbas101r@gmail.com?subject=${subject}&body=${body}`
   }
+
+  const contactLinks = [
+    {
+      href: 'mailto:naeemabbas101r@gmail.com',
+      label: 'Email Me',
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </svg>
+      ),
+      external: false,
+    },
+    {
+      href: 'https://linkedin.com/in/naeem-abbas-ali-147a9122a/',
+      label: 'LinkedIn',
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+          <rect x="2" y="9" width="4" height="12"/>
+          <circle cx="4" cy="4" r="2"/>
+        </svg>
+      ),
+      external: true,
+    },
+    {
+      href: 'https://github.com/Naeemali081',
+      label: 'GitHub',
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+        </svg>
+      ),
+      external: true,
+    },
+  ]
   
   return (
     <section className="contact" id="contact" ref={ref}>
+      <div className="contact-bg-pattern" />
+      <div className="contact-bg-glow" />
       <div className="container">
         <motion.div
           className="contact-content"
@@ -977,15 +1047,36 @@ const Contact = () => {
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8 }}
         >
-          <span className="section-tag">Get In Touch</span>
-          <h2 className="contact-title">Let's work together</h2>
+          <motion.div
+            className="contact-header"
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
+            <span className="section-tag">Get In Touch</span>
+            <span className="contact-availability">
+              <span className="availability-dot" />
+              Available for new projects
+            </span>
+          </motion.div>
+          <h2 className="contact-title">
+            <span className="contact-title-line">Let's build</span>
+            <span className="contact-title-line contact-title-accent">something great</span>
+          </h2>
           <p className="contact-description">
             Have a project in mind? I'd love to hear about it. Let's discuss how 
             we can bring your ideas to life with modern, performant web solutions.
           </p>
           
           <div className="contact-layout">
-            <form className="contact-form" onSubmit={handleSubmit}>
+            <motion.form
+              className="contact-form"
+              onSubmit={handleSubmit}
+              initial={{ opacity: 0, x: -30 }}
+              animate={isInView ? { opacity: 1, x: 0 } : {}}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <div className="contact-form-glow" />
               <div className="form-row">
                 <div className="form-field">
                   <label htmlFor="name">Name</label>
@@ -1006,53 +1097,53 @@ const Contact = () => {
                   placeholder="Tell me a bit about your project, timeline, and goals."
                 />
               </div>
-              <button type="submit" className="btn btn-primary contact-submit">
+              <motion.button
+                type="submit"
+                className="btn btn-primary contact-submit"
+                whileHover={{ scale: 1.02, boxShadow: '0 8px 40px rgba(99, 102, 241, 0.5)' }}
+                whileTap={{ scale: 0.98 }}
+              >
                 Send Message
-              </button>
-            </form>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="contact-submit-arrow">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+              </motion.button>
+            </motion.form>
 
-            <div className="contact-links">
-              <motion.a
-                href="mailto:naeemabbas101r@gmail.com"
-                className="contact-link hoverable"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                  <polyline points="22,6 12,13 2,6"/>
-                </svg>
-                <span>Email Me</span>
-              </motion.a>
-              <motion.a
-                href="https://linkedin.com/in/naeem-abbas-ali-147a9122a/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="contact-link hoverable"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
-                  <rect x="2" y="9" width="4" height="12"/>
-                  <circle cx="4" cy="4" r="2"/>
-                </svg>
-                <span>LinkedIn</span>
-              </motion.a>
-              <motion.a
-                href="https://github.com/Naeemali081"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="contact-link hoverable"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
-                </svg>
-                <span>GitHub</span>
-              </motion.a>
-            </div>
+            <motion.div
+              className="contact-links-wrapper"
+              initial={{ opacity: 0, x: 30 }}
+              animate={isInView ? { opacity: 1, x: 0 } : {}}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              <span className="contact-divider">
+                <span className="contact-divider-line" />
+                or reach me directly
+                <span className="contact-divider-line" />
+              </span>
+              <div className="contact-links">
+                {contactLinks.map((link, i) => (
+                  <motion.a
+                    key={link.label}
+                    href={link.href}
+                    target={link.external ? "_blank" : undefined}
+                    rel={link.external ? "noopener noreferrer" : undefined}
+                    className={`contact-link contact-link-${link.label.toLowerCase().replace(' ', '-')} hoverable`}
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={isInView ? { opacity: 1, y: 0 } : {}}
+                    transition={{ duration: 0.4, delay: 0.4 + i * 0.1 }}
+                    whileHover={{ scale: 1.03, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <span className="contact-link-icon">{link.icon}</span>
+                    <span>{link.label}</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="contact-link-arrow">
+                      <path d="M7 17L17 7M17 7h-6M17 7v6"/>
+                    </svg>
+                  </motion.a>
+                ))}
+              </div>
+            </motion.div>
           </div>
         </motion.div>
       </div>
